@@ -30,13 +30,23 @@ weather_data = weather_data.resample('D').mean()
 def check_stationarity(timeseries, title):
     """Perform ADF test and plot time series + histogram."""
     result = adfuller(timeseries.dropna())
+    adf_statistic = result[0]
+    p_value = result[1]
+    
     print(f'Results for {title}:')
-    print(f'ADF Statistic: {result[0]:.4f}')
-    print(f'p-value: {result[1]:.4f}')
+    print(f'ADF Statistic: {adf_statistic:.4f}')
+    print(f'p-value: {p_value:.4f}')
     print('Critical Values:')
-    for key, value in result[4].items():
-        print(f'  {key}: {value:.3f}')
-    if result[1] <= 0.05:
+    
+    # Handle critical values safely
+    if len(result) > 4 and hasattr(result[4], 'items'):
+        critical_values = result[4]
+        for key, value in critical_values.items():
+            print(f'  {key}: {value:.3f}')
+    else:
+        print('  Critical values not available in expected format')
+    
+    if p_value <= 0.05:
         print("✓ Data is stationary (reject null hypothesis)")
     else:
         print("✗ Data is non-stationary (fail to reject null hypothesis)")
