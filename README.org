@@ -1,0 +1,7 @@
+#+Title: A deeper dive and Arima and extensions
+
+* Contents
+
+This repo contains two presentations. In the python subdirectory
+there is both data and code.  We will do a deeper dive into Arima.
+There is also a quiz and a glossary. 

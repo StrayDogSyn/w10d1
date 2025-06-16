@@ -1,0 +1,13 @@
+\frametitle{Summary of S-Arima}
+\begin{itemize}
+\item ARIMA models handle trend and autocorrelation
+\item Use differencing + ACF + PACF to identify parameters
+\item Fit models with \texttt{`statsmodels`} in Python
+\end{itemize}
+
+\begin{block}{References}
+\begin{itemize}
+\item Box, Jenkins, Reinsel: \alert{Time Series Analysis}
+\item Statsmodels documentation: \texttt{ARIMA} and \texttt{plot\_acf/pacf}
+\end{itemize}
+\end{block}

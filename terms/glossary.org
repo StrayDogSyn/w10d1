@@ -1,0 +1,20 @@
+- *ARIMA*: Autoregressive Integrated Moving Average model combining
+  past values and errors
+- *Stationarity*: Property where statistical properties don't change
+  over time
+- *Differencing*: Subtracting consecutive observations to achieve
+  stationarity
+- *Autocorrelation*: Correlation of a time series with its own lagged
+  values
+- *Partial Autocorrelation*: Correlation between observations at
+  different lags, removing intermediate effects
+- *Seasonal Decomposition*: Separating time series into trend,
+  seasonal, and residual components
+- *ACF Plot*: Autocorrelation Function plot showing correlation at
+  different lags
+- *PACF Plot*: Partial Autocorrelation Function plot for model order
+  selection
+- *AIC/BIC*: Information criteria for model selection (lower is
+  better)
+- *Residual Analysis*: Checking if model errors are random and
+  normally distributed

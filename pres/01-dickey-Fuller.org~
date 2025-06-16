@@ -1,0 +1,137 @@
+#+TITLE: The Dickey–Fuller Test for Stationarity
+#+AUTHOR: Evan Misshula
+#+DATE: \today
+#+LANGUAGE: en
+
+#+LATEX_HEADER: \usepackage[style=apa, backend=biber]{biblatex}
+#+LATEX_HEADER: \DeclareLanguageMapping{american}{american-apa}
+#+LATEX_HEADER: \addbibresource{./refs/refs.bib}
+#+LATEX_HEADER: \AtEveryBibitem{\clearfield{note}}
+#+LATEX_HEADER: \usepackage{./jtc}
+#+STARTUP: beamer
+#+OPTIONS: H:2 toc:nil num:t
+#+LATEX_CLASS: beamer
+#+LATEX_CLASS_OPTIONS: [aspectratio=169]
+#+COLUMNS: %45ITEM %10BEAMER_ENV(Env) %10BEAMER_ACT(Act) %4BEAMER_COL(Col) %8BEAMER_OPT(Opt)
+
+#+name: initialize_lang
+#+source: configuration
+#+begin_src emacs-lisp :results output :exports none
+	(require 'ob-mermaid)
+	(setq ob-mermaid-cli-path "/home/evan/.nvm/versions/node/v20.1.0/bin/mmdc")
+	;; Doesn't work
+		   ;; first it is necessary to ensure that Org-mode loads support for the
+		    ;; languages used by code blocks in this article
+		    (org-babel-do-load-languages
+		     'org-babel-load-languages
+		     '(
+		       (ditaa      . t)     
+		       (dot        . t)
+		       (emacs-lisp . t)
+		       (haskell    . t)
+		       (org        . t)
+		       (perl       . t)
+		       (python     . t)
+		       (R          . t)
+		       (ruby       . t)
+		       (plantuml   . t)
+		       (mermaid    . t)
+		       (sqlite     . t)))
+		    ;; then we'll remove the need to confirm evaluation of each code
+		    ;; block, NOTE: if you are concerned about execution of malicious code
+		    ;; through code blocks, then comment out the following line
+		(add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+		(setq org-confirm-babel-evaluate nil)
+		  (setq org-ditaa-jar-path "/usr/bin/ditaa")
+		  (setq org-plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
+		  (add-to-list 'exec-path "/home/evan/.nvm/versions/node/v20.1.0/bin")
+	    ;;      (setq org-mermaid-jar-path "/home/evan/.nvm/versions/node/v20.1.0/lib/node_modules/@mermaid-js/mermaid-cli/node_modules/mermaid
+	    ;;    ")
+	  (setenv "PATH" (concat (getenv "PATH") ":/home/evan/.nvm/versions/node/v20.1.0/bin"))
+	  (add-to-list 'exec-path "/home/evan/.nvm/versions/node/v20.1.0/bin")
+
+		 (setenv "PUPPETEER_EXECUTABLE_PATH" "/usr/bin/google-chrome-stable")
+		 (setenv "PUPPETEER_DISABLE_SANDBOX" "1")
+	(setq org-babel-mermaid-cli-path "/home/evan/.nvm/versions/node/v20.1.0/bin/mmdc")
+
+    (setq org-preview-latex-default-process 'dvipng)
+    (setq org-preview-latex-process-alist
+	  '((dvipng :programs ("latex" "dvipng")
+		    :description "dvi > png using dvipng"
+		    :message "You need to install latex and dvipng"
+		    :image-input-type "dvi"
+		    :image-output-type "png"
+		    :image-size-adjust (1.0 . 1.0)
+		    :latex-compiler ("latex -interaction nonstopmode -output-directory %o %f")
+		    :image-converter ("dvipng -D 300 -T tight -o %O %f"))))
+
+    (setq org-preview-latex-image-directory "ltximg/")
+
+	  ;; Add LaTeX block template and scaling
+	  (with-eval-after-load 'org
+	    (add-to-list 'org-structure-template-alist '("e" . "latex"))
+	    (plist-put org-format-latex-options :scale 3.0))
+
+
+		 (setenv "PATH" (concat "/home/evan/.nvm/versions/node/v20.1.0/bin:" (getenv "PATH")))
+		  ;; finally we'll customize the default behavior of Org-mode code blocks
+		    ;; so that they can be used to display examples of Org-mode syntax
+		    (setf org-babel-default-header-args:org '((:exports . "code")))
+		    (setq org-babel-inline-result-wrap '%s)
+		    ;; This gets rid of the wrapping around the results of evaluated org mode 
+		    ;; in line code
+		    (setq reftex-default-bibliography '("/home/emisshula/proposal/mybib.bib"))
+		    (setq org-latex-prefer-user-labels t)
+	;;    (plist-put org-format-latex-options :scale 3.0)
+  (require 'python)
+  ;; Python shell configuration
+  (setq python-shell-interpreter "/home/evan/.mlf/bin/ipython3"
+	python-shell-interpreter-args "-i")
+
+
+  ;; Workaround for readline issue
+  (add-to-list 'python-shell-completion-native-disabled-interpreters "ipython3")
+
+
+  (global-set-key (kbd "C-c e") 'insEq)
+#+end_src
+
+#+RESULTS: configuration
+
+*Stationarity
+** 1. What is Stationarity?
+  - A time series \( \{y_t\} \) is **strictly stationary** if its statistical properties (like mean, variance, autocorrelation) do not change over time.
+  - **Weak (covariance) stationarity**:  
+    1. \( E[y_t] = \mu \) (constant mean)  
+    2. \( \mathrm{Var}(y_t) = \sigma^2 \) (constant variance)  
+    3. \( \mathrm{Cov}(y_t, y_{t+k}) \) depends only on lag \( k \), not on \( t \).
+
+* 2. What is a Unit Root?
+  - Consider the AR(1) model:  
+    \( y_t = \phi\,y_{t-1} + \varepsilon_t \), where \( \varepsilon_t \sim \mathrm{IID}(0, \sigma^2) \).
+  - If \( |\phi| < 1 \), the process is stationary.  
+  - If \( \phi = 1 \), there is a **unit root**, and \( y_t = y_{t-1} + \varepsilon_t \) is a **random walk** → non‑stationary.
+
+* 3. Rewriting Using Differences
+  - Define the first difference:  
+    \( \Delta y_t = y_t - y_{t-1} \).
+  - Then:  
+    \( \Delta y_t = (\phi - 1)\,y_{t-1} + \varepsilon_t = \delta\,y_{t-1} + \varepsilon_t \),  
+    where \( \delta = \phi - 1 \).
+  - Hypotheses:  
+    - \( H_0 \): \( \delta = 0 \) (i.e., \( \phi = 1 \), non‑stationary).  
+    - \( H_1 \): \( \delta < 0 \) (i.e., \( |\phi| < 1 \), stationary).
+
+* Tests      
+* 4. Dickey–Fuller Test Statistic
+  - Estimate regression:  
+    \( \Delta y_t = \delta\,y_{t-1} + \varepsilon_t \).
+  - Compute t‑statistic:  
+    \( t_\delta = \widehat\delta / \mathrm{SE}(\widehat\delta) \).
+  - Compare \( t_\delta \) to non‑standard critical values (e.g., from MacKinnon tables).
+
+* 5. Augmented Dickey–Fuller (ADF)
+  - Add intercept and trend if needed:  
+    \( \Delta y_t = \alpha + \beta\,t + \delta\,y_{t-1} + \sum_{i=1}^p \gamma_i\,\Delta y_{t-i} + \varepsilon_t \).
+  - The additional lag terms control for higher‑order correlation in residuals.
+

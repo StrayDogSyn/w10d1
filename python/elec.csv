@@ -1,0 +1,9 @@
+  /home/evan/Documents/columbia/jtc/seasonality/jeremy:
+  drwxrwxr-x 3 evan evan    4096 May 17 14:10 .
+  drwxrwxr-x 5 evan evan    4096 May 17 13:49 ..
+  -rw-rw-r-- 1 evan evan 8620602 May 17 12:23 1-1-2017_12-31-2019.csv
+  -rw-rw-r-- 1 evan evan 9378294 May 17 12:23 1-1-2020_12-31-2022.csv
+  -rw-rw-r-- 1 evan evan 7276117 May 17 12:23 1-1-2023_today.csv
+  drwxrwxr-x 2 evan evan    4096 May 17 12:45 .ipynb_checkpoints
+  -rw-rw-r-- 1 evan evan  528312 May 17 12:47 weather_exploration.ipynb
+  -rw-rw-r-- 1 evan evan    4228 May 17 14:10 weather_exploration.py

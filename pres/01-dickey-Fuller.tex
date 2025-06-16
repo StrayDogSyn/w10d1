@@ -1,0 +1,112 @@
+% Created 2025-06-16 Mon 13:25
+% Intended LaTeX compiler: pdflatex
+\documentclass[aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage[style=apa, backend=biber]{biblatex}
+\DeclareLanguageMapping{american}{american-apa}
+\addbibresource{./refs/refs.bib}
+\AtEveryBibitem{\clearfield{note}}
+\usepackage{./jtc}
+\usetheme{default}
+\author{Evan Misshula}
+\date{\today}
+\title{The Dickey-Fuller Test for Stationarity}
+\hypersetup{
+ pdfauthor={Evan Misshula},
+ pdftitle={The Dickey-Fuller Test for Stationarity},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 29.3 (Org mode 9.6.15)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+
+\section{Stationarity}
+\label{sec:orga32723b}
+\begin{frame}[label={sec:org95b1c6e}]{1. What is Stationarity?}
+\begin{itemize}
+\item A time series \(\{y_t\}\) is \alert{\alert{strictly stationary}} if its statistical properties (like mean, variance, autocorrelation) do not change over time.
+\item \alert{\alert{Weak (covariance) stationarity}}:  
+\begin{enumerate}
+\item \(E[y_t] = \mu\) (constant mean)
+\item \(\mathrm{Var}(y_t) = \sigma^2\) (constant variance)
+\item \(\mathrm{Cov}(y_t, y_{t+k})\) depends only on lag \(k\), not on \(t\).
+\end{enumerate}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label={sec:orgf501679}]{2. What is a Unit Root?}
+\begin{itemize}
+\item Consider the AR(1) model: -\(y_t = \phi\,y_{t-1} + \varepsilon_t\), where \(\varepsilon_t \sim \mathrm{IID}(0, \sigma^2)\).
+\item If \(|\phi| < 1\), the process is stationary.
+\item If \(\phi = 1\), there is a \alert{unit root}, and \(y_t =
+    y_{t-1} + \varepsilon_t\) is a \alert{random walk} \(\rightarrow\) non‑stationary.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label={sec:org556f11d}]{What does IID mean?}
+\begin{itemize}
+\item \alert{IID} stands for \alert{independent and identically distributed}
+\begin{itemize}
+\item Each \(\varepsilon_t\) is drawn from the same distribution
+(e.g., Normal with mean 0, variance \(\sigma^2\))
+\item No dependence across time: each error term is independent of the
+others
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label={sec:org882d165}]{3. Rewriting Using Differences}
+\begin{itemize}
+\item Define the first difference:  \(\Delta y_t = y_t - y_{t-1}\).
+\item Then:  
+\begin{itemize}
+\item \(\Delta y_t = (\phi - 1)\,y_{t-1} + \varepsilon_t =
+      \delta\,y_{t-1} + \varepsilon_t\),
+\end{itemize}
+where \(\delta = \phi - 1\).
+\item Hypotheses:  
+\begin{itemize}
+\item \(H_0\): \(\delta = 0\) (i.e., \(\phi = 1\),
+non‑stationary).
+\item \(H_1\): \(\delta < 0\) (i.e., \(|\phi| < 1\),
+stationary).
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\section{Tests}
+\label{sec:org30a5550}
+\begin{frame}[label={sec:orgc863dd1}]{4. Dickey-Fuller Test Statistic}
+\begin{itemize}
+\item Estimate regression: \(\Delta y_t = \delta\,y_{t-1} +
+    \varepsilon_t\).
+
+\item Compute t‑statistic: \(t_\delta = \widehat\delta / \mathrm{SE}(\widehat\delta)\).
+\item Compare \(t_\delta\) to non‑standard critical values (e.g., from
+MacKinnon tables).
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label={sec:org6efc78e}]{5. Augmented Dickey-Fuller (ADF)}
+\begin{itemize}
+\item Add intercept and trend if needed:  
+\[
+    \Delta y_t = \alpha + \beta\,t + \delta\,y_{t-1} + \sum_{i=1}^p \gamma_i\,\Delta y_{t-i} + \varepsilon_t
+    \].
+\item The additional lag terms control for higher‑order correlation in
+residuals.
+\end{itemize}
+\end{frame}
+\end{document}

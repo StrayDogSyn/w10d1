@@ -1,0 +1,256 @@
+import os
+os.chdir("/home/evan/Documents/columbia/jtc/seasonality/jeremy")
+
+import pandas as pd
+
+
+dfx = pd.read_csv("1-1-2017_12-31-2019.csv")
+dfx.shape
+dfx.columns
+dfx.info()
+dfx.tail()
+station_counts = dfx['STATION'].value_counts()
+station_counts[station_counts == 1095]
+# df.query('STATION == USW00054787', inplace=False) = GO BACK TO LATER
+dfx['DATE'] = pd.to_datetime(dfx['DATE'])
+
+dfx.info()
+df1 = dfx[dfx['STATION'] == 'USW00094728'].copy()
+df1.info()
+df1.sort_values('DATE', ascending=True)
+df1.head()
+df1 = df1.dropna(axis=1, how='any')
+df1.info()
+def clean_data(original):
+    clean_df = original[original['STATION'] == 'USW00094728'].copy()
+    clean_df = clean_df.dropna(axis=1, how='any')
+    clean_df['DATE'] = pd.to_datetime(clean_df['DATE'])
+    return clean_df
+
+original_df2 = pd.read_csv("1-1-2020_12-31-2022.csv")
+original_df3 = pd.read_csv("1-1-2023_today.csv")
+
+
+df2 = clean_data(original_df2)
+df3 = clean_data(original_df3)
+
+df2.info()
+df3.info()
+
+
+df = pd.concat([df1, df2, df3], ignore_index=True)
+df = pd.concat([df2, df3], ignore_index=True)
+df.info()
+
+
+# In[21]:
+
+
+df = df.drop(columns=['NAME'])
+
+
+# In[22]:
+
+
+df.info()
+
+
+# In[23]:
+
+
+import matplotlib.pyplot as plt
+
+
+# In[24]:
+
+
+plt.figure(figsize=(10,8))
+plt.plot(df['DATE'], df['TMAX'], label="Max Temp", color="red")
+plt.plot(df['DATE'], df['TMIN'], label="Min Temp", color="green")
+plt.xlabel('Date')
+plt.ylabel('Temp')
+plt.show()
+
+
+# In[25]:
+
+
+rainy_days = df[df['PRCP'] > 0].copy()
+
+
+# In[26]:
+
+
+plt.figure(figsize=(12, 6))
+plt.scatter(rainy_days['DATE'], rainy_days['PRCP'], alpha=0.6, color='blue')
+
+plt.title('Rainfall in Central Park')
+plt.xlabel('Date')
+plt.ylabel('Precipitation')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+# In[27]:
+
+
+df.info()
+
+
+# In[28]:
+
+
+df['YEAR_MONTH'] = df['DATE'].dt.to_period('M')
+df.info()
+
+
+# In[29]:
+
+
+df.head()
+
+
+# In[30]:
+
+
+monthly_rain_df = df.groupby('YEAR_MONTH')['PRCP'].sum().reset_index()
+monthly_rain_df['YEAR_MONTH'] = monthly_rain_df['YEAR_MONTH'].dt.to_timestamp()
+monthly_rain_df.info()
+
+
+# In[31]:
+
+
+monthly_rain_df.head()
+
+
+# In[32]:
+
+
+plt.figure(figsize=(12, 6))
+plt.scatter(monthly_rain_df['YEAR_MONTH'], monthly_rain_df['PRCP'], alpha=0.6, color='blue')
+
+plt.title('Rainfall in Central Park (Monthly)')
+plt.xlabel('Date')
+plt.ylabel('Precipitation')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+# In[33]:
+
+
+df.info()
+
+
+# In[34]:
+
+
+df['MONTH'] = df['DATE'].dt.month
+df['YEAR'] = df['DATE'].dt.year
+
+
+# In[35]:
+
+
+def mo_to_season(month): #num 1-12
+    if month in [12,1,2]:
+        return 'Winter'
+    elif month in [3,4,5]:
+        return 'Spring'
+    elif month in [6,7,8]:
+        return 'Summer'
+    else:
+        return 'Fall'
+
+
+# In[36]:
+
+
+df['SEASON'] = df['MONTH'].apply(mo_to_season)
+season_df = df.groupby(['YEAR', 'SEASON'])[['TMAX','TMIN']].mean().reset_index()
+
+
+# In[37]:
+
+
+season_df
+
+
+# In[38]:
+
+
+plt.figure(figsize=(12, 6))
+
+for season in ['Winter', 'Spring', 'Summer', 'Fall']:
+    temp_df = season_df[season_df['SEASON'] == season]
+    plt.plot(temp_df['YEAR'], temp_df['TMAX'], label=season+" max")
+    plt.plot(temp_df['YEAR'], temp_df['TMIN'], label=season+" min")
+
+plt.xlabel('year')
+plt.ylabel('temp')
+plt.legend()
+plt.show()
+
+
+# In[40]:
+
+
+df['HOT_DAY'] = df['TMAX'] > 90
+df.info()
+
+
+# In[41]:
+
+
+heatwave_dates = []
+streak = []
+
+for i in range(len(df)):
+    if df.loc[i, 'HOT_DAY']:
+        streak.append(df.loc[i, 'DATE'])
+    else:
+        if len(streak) >= 3:
+            heatwave_dates.extend(streak)
+        streak = []  # reset
+
+heatwave_dates
+
+
+# In[42]:
+
+
+df['HEATWAVE'] = df['DATE'].isin(heatwave_dates) # KEEP AN EYE OUT FOR THIS isin METHOD.. SUPER USEFUL !!
+
+
+# In[43]:
+
+
+df.info()
+
+
+# In[44]:
+
+
+plt.figure(figsize=(14, 6))
+plt.plot(df['DATE'], df['TMAX'], label='TMAX', alpha=0.7)
+plt.scatter(df[df['HEATWAVE']]['DATE'],
+            df[df['HEATWAVE']]['TMAX'],
+            color='red', label='Heatwave', s=20)
+
+plt.title('Heatwaves (3+ Consecutive Days Over 90°F)')
+plt.xlabel('Date')
+plt.ylabel('TMAX (°F)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+# In[ ]:
+
+
+
+

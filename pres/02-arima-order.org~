@@ -1,0 +1,163 @@
+#+TITLE: Arima order and seasonality
+#+AUTHOR: Evan Misshula
+#+DATE: \today
+#+LANGUAGE: en
+
+#+LATEX_HEADER: \usepackage[style=apa, backend=biber]{biblatex}
+#+LATEX_HEADER: \DeclareLanguageMapping{american}{american-apa}
+#+LATEX_HEADER: \addbibresource{./refs/refs.bib}
+#+LATEX_HEADER: \AtEveryBibitem{\clearfield{note}}
+#+LATEX_HEADER: \usepackage{./jtc}
+#+STARTUP: beamer
+#+OPTIONS: H:2 toc:nil num:t
+#+LATEX_CLASS: beamer
+#+LATEX_CLASS_OPTIONS: [aspectratio=169]
+#+COLUMNS: %45ITEM %10BEAMER_ENV(Env) %10BEAMER_ACT(Act) %4BEAMER_COL(Col) %8BEAMER_OPT(Opt)
+
+#+name: initialize_lang
+#+source: configuration
+#+begin_src emacs-lisp :results output :exports none
+	(require 'ob-mermaid)
+	(setq ob-mermaid-cli-path "/home/evan/.nvm/versions/node/v20.1.0/bin/mmdc")
+	;; Doesn't work
+		   ;; first it is necessary to ensure that Org-mode loads support for the
+		    ;; languages used by code blocks in this article
+		    (org-babel-do-load-languages
+		     'org-babel-load-languages
+		     '(
+		       (ditaa      . t)     
+		       (dot        . t)
+		       (emacs-lisp . t)
+		       (haskell    . t)
+		       (org        . t)
+		       (perl       . t)
+		       (python     . t)
+		       (R          . t)
+		       (ruby       . t)
+		       (plantuml   . t)
+		       (mermaid    . t)
+		       (sqlite     . t)))
+		    ;; then we'll remove the need to confirm evaluation of each code
+		    ;; block, NOTE: if you are concerned about execution of malicious code
+		    ;; through code blocks, then comment out the following line
+		(add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+		(setq org-confirm-babel-evaluate nil)
+		  (setq org-ditaa-jar-path "/usr/bin/ditaa")
+		  (setq org-plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
+		  (add-to-list 'exec-path "/home/evan/.nvm/versions/node/v20.1.0/bin")
+	    ;;      (setq org-mermaid-jar-path "/home/evan/.nvm/versions/node/v20.1.0/lib/node_modules/@mermaid-js/mermaid-cli/node_modules/mermaid
+	    ;;    ")
+	  (setenv "PATH" (concat (getenv "PATH") ":/home/evan/.nvm/versions/node/v20.1.0/bin"))
+	  (add-to-list 'exec-path "/home/evan/.nvm/versions/node/v20.1.0/bin")
+
+		 (setenv "PUPPETEER_EXECUTABLE_PATH" "/usr/bin/google-chrome-stable")
+		 (setenv "PUPPETEER_DISABLE_SANDBOX" "1")
+	(setq org-babel-mermaid-cli-path "/home/evan/.nvm/versions/node/v20.1.0/bin/mmdc")
+
+    (setq org-preview-latex-default-process 'dvipng)
+    (setq org-preview-latex-process-alist
+	  '((dvipng :programs ("latex" "dvipng")
+		    :description "dvi > png using dvipng"
+		    :message "You need to install latex and dvipng"
+		    :image-input-type "dvi"
+		    :image-output-type "png"
+		    :image-size-adjust (1.0 . 1.0)
+		    :latex-compiler ("latex -interaction nonstopmode -output-directory %o %f")
+		    :image-converter ("dvipng -D 300 -T tight -o %O %f"))))
+
+    (setq org-preview-latex-image-directory "ltximg/")
+
+	  ;; Add LaTeX block template and scaling
+	  (with-eval-after-load 'org
+	    (add-to-list 'org-structure-template-alist '("e" . "latex"))
+	    (plist-put org-format-latex-options :scale 3.0))
+
+
+		 (setenv "PATH" (concat "/home/evan/.nvm/versions/node/v20.1.0/bin:" (getenv "PATH")))
+		  ;; finally we'll customize the default behavior of Org-mode code blocks
+		    ;; so that they can be used to display examples of Org-mode syntax
+		    (setf org-babel-default-header-args:org '((:exports . "code")))
+		    (setq org-babel-inline-result-wrap '%s)
+		    ;; This gets rid of the wrapping around the results of evaluated org mode 
+		    ;; in line code
+		    (setq reftex-default-bibliography '("/home/emisshula/proposal/mybib.bib"))
+		    (setq org-latex-prefer-user-labels t)
+	;;    (plist-put org-format-latex-options :scale 3.0)
+  (require 'python)
+  ;; Python shell configuration
+  (setq python-shell-interpreter "/home/evan/.mlf/bin/ipython3"
+	python-shell-interpreter-args "-i")
+
+
+  ;; Workaround for readline issue
+  (add-to-list 'python-shell-completion-native-disabled-interpreters "ipython3")
+
+
+  (global-set-key (kbd "C-c e") 'insEq)
+#+end_src
+
+
+
+* Review
+** Introduction to ARIMA Models
+- ARIMA stands for:
+  - AR: Autoregressive
+  - I: Integrated (differencing)
+  - MA: Moving Average
+- ARIMA models are used for univariate time series forecasting.
+- General form: ARIMA(p, d, q)
+
+* Mathematical Definitions
+
+** Autoregressive (AR) Model
+- An AR(p) model expresses current value \( y_t \) as a linear combination of past values:
+  \[
+    y_t = \phi_1 y_{t-1} + \phi_2 y_{t-2} + \cdots + \phi_p y_{t-p} + \varepsilon_t
+  \]
+  where \( \varepsilon_t \sim \text{IID}(0, \sigma^2) \)
+
+** Moving Average (MA) Model
+- An MA(q) model expresses \( y_t \) as a linear combination of past error terms:
+  \[
+    y_t = \mu + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \cdots + \theta_q \varepsilon_{t-q}
+  \]
+  where \( \varepsilon_t \) is white noise
+
+* ACF and PACF
+
+** Autocorrelation Function (ACF)
+- Measures linear correlation between \( y_t \) and \( y_{t-k} \)
+  \[
+    \rho_k = \frac{\text{Cov}(y_t, y_{t-k})}{\sqrt{\text{Var}(y_t)\, \text{Var}(y_{t-k})}}
+  \]
+
+** Partial Autocorrelation Function (PACF)
+- Measures correlation between \( y_t \) and \( y_{t-k} \), controlling for \( y_{t-1}, \ldots, y_{t-k+1} \)
+- Formally, PACF at lag k is the coefficient \( \phi_{kk} \) in the AR(k) model
+
+* Identifying ARIMA Order
+
+** How to choose p, d, q?
+We use:
+
+- *Differencing*: determines \( d \), the number of times to difference the data to make it stationary
+- *ACF plot*: helps choose \( q \), the MA order
+- *PACF plot*: helps choose \( p \), the AR order
+
+** Rules of Thumb
+- If ACF cuts off sharply after lag \( q \): likely MA(q)
+- If PACF cuts off sharply after lag \( p \): likely AR(p)
+- If both ACF and PACF decay gradually: try ARMA(p,q)
+
+* Python Implementation
+
+* Summary
+
+- ARIMA models handle trend and autocorrelation
+- Use differencing + ACF + PACF to identify parameters
+- Fit models with ~`statsmodels`~ in Python
+
+* References
+
+- Box, Jenkins, Reinsel: *Time Series Analysis*
+- Statsmodels documentation: ~ARIMA~ and ~plot_acf/pacf~

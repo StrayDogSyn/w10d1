@@ -1,0 +1,135 @@
+% Created 2025-06-16 Mon 13:08
+% Intended LaTeX compiler: pdflatex
+\documentclass[aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage[style=apa, backend=biber]{biblatex}
+\DeclareLanguageMapping{american}{american-apa}
+\addbibresource{./refs/refs.bib}
+\AtEveryBibitem{\clearfield{note}}
+\usepackage{./jtc}
+\usetheme{default}
+\author{Evan Misshula}
+\date{\today}
+\title{Arima order and seasonality}
+\hypersetup{
+ pdfauthor={Evan Misshula},
+ pdftitle={Arima order and seasonality},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 29.3 (Org mode 9.6.15)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+
+\section{Review}
+\label{sec:org7db1a04}
+\begin{frame}[label={sec:org950063c}]{Introduction to ARIMA Models}
+\begin{itemize}
+\item ARIMA stands for:
+\begin{itemize}
+\item AR: Autoregressive
+\item I: Integrated (differencing)
+\item MA: Moving Average
+\end{itemize}
+\item ARIMA models are used for univariate time series forecasting.
+\item General form: ARIMA(p, d, q)
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[label={sec:org7246426}]{Autoregressive (AR) Model}
+\begin{itemize}
+\item An AR(p) model expresses current value \(y_t\) as a linear combination of past values:
+\[
+    y_t = \phi_1 y_{t-1} + \phi_2 y_{t-2} + \cdots + \phi_p y_{t-p} + \varepsilon_t
+  \]
+where \(\varepsilon_t \sim \text{IID}(0, \sigma^2)\)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label={sec:org62a8983}]{Moving Average (MA) Model}
+\begin{itemize}
+\item An MA(q) model expresses \(y_t\) as a linear combination of past error terms:
+\[
+    y_t = \mu + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \cdots + \theta_q \varepsilon_{t-q}
+  \]
+where \(\varepsilon_t\) is white noise
+\end{itemize}
+\end{frame}
+
+\section{ACF and PACF}
+\label{sec:orgd3ea40f}
+
+\begin{frame}[label={sec:org6d7a24b}]{Autocorrelation Function (ACF)}
+\begin{itemize}
+\item Measures linear correlation between \(y_t\) and \(y_{t-k}\)
+\[
+    \rho_k = \frac{\text{Cov}(y_t, y_{t-k})}{\sqrt{\text{Var}(y_t)\, \text{Var}(y_{t-k})}}
+  \]
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label={sec:org93cd145}]{Partial Autocorrelation Function (PACF)}
+\begin{itemize}
+\item Measures correlation between \(y_t\) and \(y_{t-k}\), controlling for \(y_{t-1}, \ldots, y_{t-k+1}\)
+\item Formally, PACF at lag k is the coefficient \(\phi_{kk}\) in the AR(k) model
+\end{itemize}
+\end{frame}
+
+\section{Identifying ARIMA Order}
+\label{sec:org5d5afea}
+
+\begin{frame}[label={sec:org86c9185}]{How to choose p, d, q?}
+We use:
+
+\begin{itemize}
+\item \alert{Differencing}: determines \(d\), the number of times to difference the data to make it stationary
+\item \alert{ACF plot}: helps choose \(q\), the MA order
+\item \alert{PACF plot}: helps choose \(p\), the AR order
+\end{itemize}
+\end{frame}
+
+\begin{frame}[label={sec:org28253ba}]{Rules of Thumb}
+\begin{itemize}
+\item If ACF cuts off sharply after lag \(q\): likely MA(q)
+\item If PACF cuts off sharply after lag \(p\): likely AR(p)
+\item If both ACF and PACF decay gradually: try ARMA(p,q)
+\end{itemize}
+\end{frame}
+
+\section{Python Implementation}
+\label{sec:orga24e08e}
+\begin{frame}[label={sec:org6d40dc5}]{Let's run code}
+07-arima-order.py
+\end{frame}
+
+
+\section{Summary}
+\label{sec:org0b14245}
+\begin{frame}[label={sec:org96a5939},fragile]{Summary of S-Arima}
+ \begin{itemize}
+\item ARIMA models handle trend and autocorrelation
+\item Use differencing + ACF + PACF to identify parameters
+\item Fit models with \texttt{`statsmodels`} in Python
+\end{itemize}
+
+\begin{block}{References}
+\begin{itemize}
+\item Box, Jenkins, Reinsel: \alert{Time Series Analysis}
+\item Statsmodels documentation: \texttt{ARIMA} and \texttt{plot\_acf/pacf}
+\end{itemize}
+\end{block}
+\end{frame}
+\end{document}

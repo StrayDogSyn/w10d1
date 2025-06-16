@@ -1,0 +1,2 @@
+\beamer@sectionintoc {1}{Stationarity}{2}{0}{1}
+\beamer@sectionintoc {2}{Tests}{6}{0}{2}
