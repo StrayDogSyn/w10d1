@@ -7,7 +7,7 @@ This script provides a reusable function to analyze a weather variable for:
 2. Stationarity testing
 3. Differencing to achieve stationarity
 
-Required CSV: weather_history.csv with columns:
+Required CSV: ../python/weather_history.csv with columns:
 - date
 - temperature
 
@@ -17,15 +17,21 @@ Author: Evan Misshula
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.stattools import adfuller
 
 # Load and prepare weather data
-weather_data = pd.read_csv('weather_history.csv', parse_dates=['date'])
+# Get the current script directory and navigate to the python subfolder
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(script_dir)  # This gets us to w10d1
+weather_file_path = os.path.join(parent_dir, 'python', 'weather_history.csv')
+print(f"Looking for weather data at: {weather_file_path}")
+weather_data = pd.read_csv(weather_file_path, parse_dates=['date'])
 weather_data.set_index('date', inplace=True)
 
-# Ensure daily frequency with resampling
-weather_data = weather_data.resample('D').mean()
+# Ensure daily frequency with resampling (only for numeric columns)
+weather_data = weather_data.select_dtypes(include=[np.number]).resample('D').mean()
 
 def check_stationarity(timeseries, title):
     """Perform ADF test and plot time series + histogram."""
